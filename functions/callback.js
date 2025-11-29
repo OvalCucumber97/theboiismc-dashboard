@@ -10,7 +10,7 @@ export async function onRequest(context) {
   }
 
   // 1. Exchange Code for Token
-  const tokenResponse = await fetch("https://accounts.theboiismc.com/application/o/theboiismc/token/", {
+  const tokenResponse = await fetch("https://accounts.theboiismc.com/application/o/profile/token/", {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
