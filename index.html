@@ -208,9 +208,17 @@
     </div>
   </main>
 
-  <!-- SCRIPTS -->
-<script defer src="/main.js"></script>
-<script defer src="/auth.js"></script>
+<!-- SCRIPTS - Defer ensures they run after DOM is ready -->
+  <script defer src="/main.js"></script>
+  <script defer src="/auth.js"></script>
+
+  <!-- FAILSAFE: If the loading screen stays for 3 seconds, force remove it -->
+  <!-- Do NOT defer this one; we want the timer to start immediately -->
+  <script>
+    setTimeout(() => {
+        document.body.classList.add('loaded');
+    }, 3000);
+  </script>
 
 </body>
 </html>
