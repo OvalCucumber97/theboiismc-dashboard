@@ -1,5 +1,3 @@
-// functions/callback.js
-
 export async function onRequest(context) {
   const { request, env } = context;
   const url = new URL(request.url);
@@ -10,12 +8,12 @@ export async function onRequest(context) {
   }
 
   // 1. Exchange Code for Token
-  // UPDATED: Changed slug from 'theboiismc' to 'profile' to match your Authentik settings
-  const tokenResponse = await fetch("https://accounts.theboiismc.com/application/o/profile/token/", {
+  // UPDATED: Removed the slug path. Used the URL exactly as shown in your JSON config.
+  const tokenResponse = await fetch("https://accounts.theboiismc.com/application/o/token/", {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
-      // Verify AUTHENTIK_SECRET is set in your Cloudflare Pages variables
+      // Ensure AUTHENTIK_SECRET is set in your Cloudflare Pages variables
       "Authorization": "Basic " + btoa("yopePhMvPt1dj65UFbmVkxHIuX7MDeeNBoobKSQy" + ":" + env.AUTHENTIK_SECRET)
     },
     body: new URLSearchParams({
@@ -32,6 +30,7 @@ export async function onRequest(context) {
   }
 
   // 2. Create Session Cookie
+  // Storing the access token in a Secure, HttpOnly cookie
   const cookieValue = `boiismc_session=${tokens.access_token}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=3600`;
 
   // 3. Redirect User to Dashboard
