@@ -18,7 +18,7 @@ export async function onRequest(context) {
     // 3. No Session? Redirect to Authentik
     const clientId = "yopePhMvPt1dj65UFbmVkxHIuX7MDeeNBoobKSQy";
     const redirectUri = "https://myaccount.theboiismc.com/callback";
-    const authUrl = `https://accounts.theboiismc.com/application/o/theboiismc/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=openid+profile+email`;
+    const authUrl = `https://accounts.theboiismc.com/application/o/profile/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=openid+profile+email`;
     
     return Response.redirect(authUrl, 302);
   }
