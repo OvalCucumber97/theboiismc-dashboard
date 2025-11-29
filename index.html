@@ -4,47 +4,27 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Account Management — TheBoiisMC</title>
-  <meta name="robots" content="noindex, nofollow" />
   
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts & Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
-  
-  <!-- OIDC Client Library -->
-  <script src="https://cdn.jsdelivr.net/npm/oidc-client-ts@2.2.0/dist/browser/oidc-client-ts.min.js"></script>
 
   <style>
-    :root {
-      --bg-body: #09090b; --bg-panel: #18181b; --border-color: #27272a;
-      --primary: #6366F1; --primary-hover: #4f46e5;
-    }
+    :root { --bg-body: #09090b; --bg-panel: #18181b; --border-color: #27272a; --primary: #6366F1; }
     body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: #e4e4e7; }
-    
-    /* Focus Rings */
     *:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 4px; }
-
-    /* Glass Panels */
-    .dashboard-card {
-      background-color: rgba(24, 24, 27, 0.6); backdrop-filter: blur(12px);
-      border: 1px solid var(--border-color); transition: all 0.2s ease-in-out;
-    }
+    .dashboard-card { background-color: rgba(24, 24, 27, 0.6); backdrop-filter: blur(12px); border: 1px solid var(--border-color); transition: all 0.2s ease-in-out; }
     .dashboard-card:hover { border-color: #3f3f46; background-color: rgba(24, 24, 27, 0.8); }
-
-    /* Nav Active State */
     .nav-link.active { background-color: rgba(99, 102, 241, 0.1); color: #818cf8; border-left: 3px solid var(--primary); }
     .nav-link { border-left: 3px solid transparent; }
-
     
-    
-    ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-track { background: var(--bg-body); }
-    ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
+    /* Simple fade in for content once loaded */
+    .animate-fade-in { animation: fadeIn 0.5s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 
-<body class="antialiased min-h-screen flex flex-col md:flex-row cloak" id="app-body">
+<body class="antialiased min-h-screen flex flex-col md:flex-row">
 
   <!-- Mobile Header -->
   <header class="md:hidden flex items-center justify-between p-4 border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-md sticky top-0 z-50">
@@ -52,9 +32,7 @@
       <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold">B</div>
       <span class="font-semibold text-white tracking-tight">Account</span>
     </div>
-    <button id="mobile-menu-btn" class="p-2 text-zinc-400 hover:text-white rounded-lg active:bg-zinc-800">
-      <span class="material-symbols-rounded">menu</span>
-    </button>
+    <button id="mobile-menu-btn" class="p-2 text-zinc-400 hover:text-white rounded-lg active:bg-zinc-800"><span class="material-symbols-rounded">menu</span></button>
   </header>
 
   <!-- Sidebar -->
@@ -64,25 +42,19 @@
         <div class="w-8 h-8 rounded-lg bg-indigo-600 group-hover:bg-indigo-500 transition-colors flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-900/20">
           <span class="material-symbols-rounded text-lg">shield_person</span>
         </div>
-        <div>
-          <h1 class="font-bold text-white leading-none">TheBoiisMC</h1>
-          <p class="text-xs text-zinc-500 mt-1 font-medium">Account Center</p>
-        </div>
+        <div><h1 class="font-bold text-white leading-none">TheBoiisMC</h1><p class="text-xs text-zinc-500 mt-1 font-medium">Account Center</p></div>
       </a>
     </div>
 
     <nav class="flex-1 px-3 space-y-1">
       <button onclick="switchTab('home')" id="nav-home" class="nav-link active w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-r-lg text-white hover:bg-zinc-900 transition-all group">
-        <span class="material-symbols-rounded text-zinc-400 group-hover:text-white group-[.active]:text-indigo-400">dashboard</span>
-        Home
+        <span class="material-symbols-rounded text-zinc-400 group-hover:text-white group-[.active]:text-indigo-400">dashboard</span> Home
       </button>
       <button onclick="switchTab('personal-info')" id="nav-personal-info" class="nav-link w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-r-lg text-zinc-400 hover:bg-zinc-900 hover:text-white transition-all group">
-        <span class="material-symbols-rounded text-zinc-500 group-hover:text-white">badge</span>
-        Personal Info
+        <span class="material-symbols-rounded text-zinc-500 group-hover:text-white">badge</span> Personal Info
       </button>
       <button onclick="switchTab('security')" id="nav-security" class="nav-link w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-r-lg text-zinc-400 hover:bg-zinc-900 hover:text-white transition-all group">
-        <span class="material-symbols-rounded text-zinc-500 group-hover:text-white">lock</span>
-        Data & Security
+        <span class="material-symbols-rounded text-zinc-500 group-hover:text-white">lock</span> Data & Security
       </button>
       
       <div class="pt-6 mt-4 border-t border-zinc-800/50 px-4">
@@ -99,18 +71,17 @@
     </nav>
 
     <div class="p-4 border-t border-zinc-800 mt-auto">
-      <button id="sign-out-btn" class="flex items-center justify-between w-full px-4 py-3 text-sm font-medium text-red-400 bg-red-500/5 hover:bg-red-500/10 border border-red-500/10 rounded-xl transition-all group">
+      <a href="/logout" class="flex items-center justify-between w-full px-4 py-3 text-sm font-medium text-red-400 bg-red-500/5 hover:bg-red-500/10 border border-red-500/10 rounded-xl transition-all group">
         <span>Sign out</span> <span class="material-symbols-rounded text-lg">logout</span>
-      </button>
+      </a>
     </div>
   </aside>
 
   <!-- Main Content -->
   <main id="main-content" class="flex-1 p-6 lg:p-12 overflow-y-auto max-w-7xl mx-auto w-full">
-    <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 pb-6 border-b border-zinc-800">
       <div class="flex items-center gap-5">
-        <div id="hero-avatar" class="w-16 h-16 rounded-full bg-indigo-600 flex items-center justify-center text-2xl font-bold text-white shadow-xl ring-4 ring-zinc-900 select-none"></div>
+        <div id="hero-avatar" class="w-16 h-16 rounded-full bg-indigo-600 flex items-center justify-center text-2xl font-bold text-white shadow-xl ring-4 ring-zinc-900 select-none">?</div>
         <div>
           <h1 class="text-3xl font-bold text-white tracking-tight">Welcome, <span id="hero-name">User</span></h1>
           <div class="flex items-center gap-2 mt-1 text-sm text-zinc-400">
@@ -124,7 +95,6 @@
     <!-- TAB: HOME -->
     <div id="tab-home" class="tab-content animate-fade-in space-y-6">
       <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        
         <div onclick="switchTab('security')" class="dashboard-card rounded-2xl p-6 cursor-pointer group relative overflow-hidden">
           <div class="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity"><span class="material-symbols-rounded text-8xl text-indigo-500 -mr-4 -mt-4">shield_lock</span></div>
           <div class="relative z-10">
@@ -206,17 +176,6 @@
     </div>
   </main>
 
-<!-- SCRIPTS - Defer ensures they run after DOM is ready -->
-  <script defer src="/main.js"></script>
-  <script defer src="/auth.js"></script>
-
-  <!-- FAILSAFE: If the loading screen stays for 3 seconds, force remove it -->
-  <!-- Do NOT defer this one; we want the timer to start immediately -->
-  <script>
-    setTimeout(() => {
-        document.body.classList.add('loaded');
-    }, 3000);
-  </script>
-
+  <script src="/main.js"></script>
 </body>
 </html>
