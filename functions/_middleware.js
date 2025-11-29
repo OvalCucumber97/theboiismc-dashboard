@@ -3,9 +3,6 @@ export async function onRequest(context) {
   const url = new URL(request.url);
 
   // --- CONFIGURATION START ---
-  // Updated Slug to 'profile'
-  const AUTHENTIK_APP_SLUG = "profile"; 
-  
   const CLIENT_ID = "yopePhMvPt1dj65UFbmVkxHIuX7MDeeNBoobKSQy";
   const REDIRECT_URI = "https://myaccount.theboiismc.com/callback";
   // --- CONFIGURATION END ---
@@ -21,12 +18,13 @@ export async function onRequest(context) {
   const hasSession = cookie && cookie.includes("boiismc_session=");
 
   if (!hasSession) {
-    // 3. No Session? Redirect to Authentik
-    const authUrl = `https://accounts.theboiismc.com/application/o/${AUTHENTIK_APP_SLUG}/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=openid+profile+email`;
+    // 3. No Session? Redirect to Authentik (Global Endpoint)
+    // UPDATED: Removed the slug path. Used the URL exactly as shown in your JSON config.
+    const authUrl = `https://accounts.theboiismc.com/application/o/authorize/?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=openid+profile+email`;
     
     return Response.redirect(authUrl, 302);
   }
 
-  // 4. Session exists? Let them through to index.html
+  // 4. Session exists? Let them through
   return next();
 }
