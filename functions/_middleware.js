@@ -1,10 +1,16 @@
-// functions/_middleware.js
-
 export async function onRequest(context) {
   const { request, next, env } = context;
   const url = new URL(request.url);
 
-  // 1. Allow public assets (CSS, JS, Images, Callback)
+  // --- CONFIGURATION START ---
+  // Updated Slug to 'profile'
+  const AUTHENTIK_APP_SLUG = "profile"; 
+  
+  const CLIENT_ID = "yopePhMvPt1dj65UFbmVkxHIuX7MDeeNBoobKSQy";
+  const REDIRECT_URI = "https://myaccount.theboiismc.com/callback";
+  // --- CONFIGURATION END ---
+
+  // 1. Allow public assets
   const publicPaths = ["/callback", "/main.js", "/logout", "/favicon.ico"];
   if (publicPaths.some(path => url.pathname.startsWith(path)) || url.pathname.includes('.')) {
     return next();
@@ -16,9 +22,7 @@ export async function onRequest(context) {
 
   if (!hasSession) {
     // 3. No Session? Redirect to Authentik
-    const clientId = "yopePhMvPt1dj65UFbmVkxHIuX7MDeeNBoobKSQy";
-    const redirectUri = "https://myaccount.theboiismc.com/callback";
-    const authUrl = `https://accounts.theboiismc.com/application/o/profile/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=openid+profile+email`;
+    const authUrl = `https://accounts.theboiismc.com/application/o/${AUTHENTIK_APP_SLUG}/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=openid+profile+email`;
     
     return Response.redirect(authUrl, 302);
   }
