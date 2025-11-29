@@ -1,256 +1,361 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Account — TheBoiisMC</title>
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-  <link rel="manifest" href="/site.webmanifest">
-  
+  <title>Account Management — TheBoiisMC</title>
   <meta name="robots" content="noindex, nofollow" />
+  <meta name="description" content="Manage your security, data, and privacy settings." />
 
-  <!-- Tailwind -->
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts & Icons -->
+  <!-- Google Fonts: Inter for UI -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+  <!-- Material Symbols -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+  <!-- OIDC Client -->
+  <script src="https://cdn.jsdelivr.net/npm/oidc-client-ts@2.2.0/dist/browser/oidc-client-ts.min.js"></script>
 
   <style>
     :root {
-      --primary-brand: #6366F1;
-      --bg-default: #0b1220;
+      --bg-body: #09090b; /* Zinc 950 */
+      --bg-panel: #18181b; /* Zinc 900 */
+      --border-color: #27272a; /* Zinc 800 */
+      --primary: #6366F1; /* Indigo 500 */
+      --primary-hover: #4f46e5;
     }
-    body { font-family: 'Inter', sans-serif; }
-    
-    /* Glassmorphism utilities */
-    .glass-panel {
-      background: rgba(17, 24, 39, 0.7);
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-body);
+      color: #e4e4e7; /* Zinc 200 */
+    }
+
+    /* Accessibility: Focus Rings */
+    *:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    /* Glass Panels */
+    .dashboard-card {
+      background-color: rgba(24, 24, 27, 0.6);
       backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-color);
+      transition: all 0.2s ease-in-out;
     }
-    
-    /* Sidebar active state */
-    .nav-item.active {
-      background-color: rgba(99, 102, 241, 0.15);
+    .dashboard-card:hover {
+      border-color: #3f3f46; /* Zinc 700 */
+      background-color: rgba(24, 24, 27, 0.8);
+    }
+
+    /* Sidebar Navigation Active State */
+    .nav-link.active {
+      background-color: rgba(99, 102, 241, 0.1);
       color: #818cf8;
-      border-right: 3px solid var(--primary-brand);
+      border-left: 3px solid var(--primary);
     }
+    .nav-link {
+      border-left: 3px solid transparent;
+    }
+
+    /* Security Cloak */
+    .cloak { opacity: 0; pointer-events: none; transition: opacity 0.4s ease-out; }
+    .cloak-revealed { opacity: 1; pointer-events: auto; }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg-body); }
+    ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #52525b; }
   </style>
 </head>
-<body class="bg-[#0b1220] text-gray-100 antialiased min-h-screen flex flex-col md:flex-row">
+
+<!-- Body hidden by default for security -->
+<body class="antialiased min-h-screen flex flex-col md:flex-row cloak" id="app-body">
+
+  <!-- Skip to Content for Accessibility -->
+  <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-indigo-600 text-white px-4 py-2 rounded-md z-50">
+    Skip to main content
+  </a>
 
   <!-- Mobile Header -->
-  <header class="md:hidden flex items-center justify-between p-4 border-b border-gray-800 bg-[#0b1220] sticky top-0 z-50">
-    <a href="https://www.theboiismc.com" class="text-xl font-extrabold tracking-tight text-[#6366F1]">
-      TheBoiis<span class="text-white">MC</span>
-    </a>
-    <button id="mobile-menu-btn" class="p-2 text-gray-400 hover:text-white">
-      <span class="material-symbols-outlined">menu</span>
+  <header class="md:hidden flex items-center justify-between p-4 border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-md sticky top-0 z-50">
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold">B</div>
+      <span class="font-semibold text-white tracking-tight">Account</span>
+    </div>
+    <button id="mobile-menu-btn" aria-label="Open menu" aria-expanded="false" class="p-2 text-zinc-400 hover:text-white rounded-lg active:bg-zinc-800">
+      <span class="material-symbols-rounded">menu</span>
     </button>
   </header>
 
   <!-- Sidebar Navigation -->
-  <aside id="sidebar" class="hidden md:flex flex-col w-64 border-r border-gray-800 bg-[#0f172a]/50 h-screen fixed md:sticky top-0 z-40">
-    <div class="p-6">
-      <a href="https://www.theboiismc.com" class="text-2xl font-extrabold tracking-tight text-[#6366F1]">
-        TheBoiis<span class="text-white">MC</span>
+  <aside id="sidebar" class="hidden md:flex flex-col w-72 border-r border-zinc-800 bg-[#0c0c0e] h-screen fixed md:sticky top-0 z-40 overflow-y-auto">
+    <div class="p-6 pb-2">
+      <a href="https://www.theboiismc.com" class="flex items-center gap-3 mb-8 group" aria-label="Go to TheBoiisMC Homepage">
+        <div class="w-8 h-8 rounded-lg bg-indigo-600 group-hover:bg-indigo-500 transition-colors flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-900/20">
+          <span class="material-symbols-rounded text-lg">shield_person</span>
+        </div>
+        <div>
+          <h1 class="font-bold text-white leading-none">TheBoiisMC</h1>
+          <p class="text-xs text-zinc-500 mt-1 font-medium">Account Center</p>
+        </div>
       </a>
-      <p class="text-xs text-gray-500 mt-1 uppercase tracking-wider font-semibold">Account</p>
     </div>
 
-    <nav class="flex-1 px-4 space-y-1">
-      <button data-tab="home" class="nav-item w-full flex items-center px-4 py-3 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-800 hover:text-white transition-all active">
-        <span class="material-symbols-outlined mr-3">home</span>
+    <nav class="flex-1 px-3 space-y-1" aria-label="Main Navigation">
+      <button onclick="switchTab('home')" id="nav-home" class="nav-link active w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-r-lg text-white hover:bg-zinc-900 transition-all group">
+        <span class="material-symbols-rounded text-zinc-400 group-hover:text-white group-[.active]:text-indigo-400">dashboard</span>
         Home
       </button>
-      <button data-tab="personal-info" class="nav-item w-full flex items-center px-4 py-3 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-800 hover:text-white transition-all">
-        <span class="material-symbols-outlined mr-3">badge</span>
+      <button onclick="switchTab('personal-info')" id="nav-personal-info" class="nav-link w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-r-lg text-zinc-400 hover:bg-zinc-900 hover:text-white transition-all group">
+        <span class="material-symbols-rounded text-zinc-500 group-hover:text-white">badge</span>
         Personal Info
       </button>
-      <button data-tab="security" class="nav-item w-full flex items-center px-4 py-3 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-800 hover:text-white transition-all">
-        <span class="material-symbols-outlined mr-3">security</span>
+      <button onclick="switchTab('security')" id="nav-security" class="nav-link w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-r-lg text-zinc-400 hover:bg-zinc-900 hover:text-white transition-all group">
+        <span class="material-symbols-rounded text-zinc-500 group-hover:text-white">lock</span>
         Data & Security
       </button>
-      <div class="pt-4 mt-4 border-t border-gray-800">
-        <p class="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Apps</p>
-        <a href="https://drive.theboiismc.com" class="flex items-center px-4 py-3 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-800 hover:text-white transition-all">
-          <span class="material-symbols-outlined mr-3 text-blue-400">cloud</span>
-          Drive
-        </a>
-        <a href="https://photos.theboiismc.com" class="flex items-center px-4 py-3 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-800 hover:text-white transition-all">
-          <span class="material-symbols-outlined mr-3 text-yellow-400">photo_library</span>
-          Photos
-        </a>
+      
+      <div class="pt-6 mt-4 border-t border-zinc-800/50 px-4">
+        <p class="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3">Connected Apps</p>
+        <div class="space-y-1">
+          <a href="https://drive.theboiismc.com" class="flex items-center gap-3 px-3 py-2 text-sm text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-lg transition-colors">
+            <span class="material-symbols-rounded text-blue-500 text-lg">cloud</span>
+            Drive
+          </a>
+          <a href="https://photos.theboiismc.com" class="flex items-center gap-3 px-3 py-2 text-sm text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-lg transition-colors">
+            <span class="material-symbols-rounded text-yellow-500 text-lg">photo_library</span>
+            Photos
+          </a>
+           <a href="https://maps.theboiismc.com" class="flex items-center gap-3 px-3 py-2 text-sm text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-lg transition-colors">
+            <span class="material-symbols-rounded text-green-500 text-lg">map</span>
+            Maps
+          </a>
+        </div>
       </div>
     </nav>
 
-    <div class="p-4 border-t border-gray-800">
-      <button id="sign-out-btn" class="flex items-center w-full px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 rounded-md transition-colors">
-        <span class="material-symbols-outlined mr-3">logout</span>
-        Sign out
+    <div class="p-4 border-t border-zinc-800 mt-auto">
+      <button id="sign-out-btn" class="flex items-center justify-between w-full px-4 py-3 text-sm font-medium text-red-400 bg-red-500/5 hover:bg-red-500/10 border border-red-500/10 rounded-xl transition-all group">
+        <span>Sign out</span>
+        <span class="material-symbols-rounded text-lg group-hover:translate-x-1 transition-transform">logout</span>
       </button>
     </div>
   </aside>
 
   <!-- Main Content Area -->
-  <main class="flex-1 p-6 md:p-10 lg:p-14 overflow-y-auto min-h-screen">
+  <main id="main-content" class="flex-1 p-6 lg:p-12 overflow-y-auto max-w-7xl mx-auto w-full">
     
     <!-- User Welcome Header -->
-    <div class="flex items-center gap-6 mb-12">
-      <div id="hero-avatar" class="w-20 h-20 rounded-full bg-[#6366F1] flex items-center justify-center text-3xl font-bold text-white shadow-xl ring-4 ring-[#0b1220]"></div>
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 pb-6 border-b border-zinc-800">
+      <div class="flex items-center gap-5">
+        <div id="hero-avatar" class="w-16 h-16 rounded-full bg-indigo-600 flex items-center justify-center text-2xl font-bold text-white shadow-xl ring-4 ring-zinc-900 select-none"></div>
+        <div>
+          <h1 class="text-3xl font-bold text-white tracking-tight">Welcome, <span id="hero-name">User</span></h1>
+          <div class="flex items-center gap-2 mt-1 text-sm text-zinc-400">
+            <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+            <span>Account secure & active</span>
+          </div>
+        </div>
+      </div>
       <div>
-        <h1 class="text-3xl font-bold text-white">Welcome, <span id="hero-name">User</span></h1>
-        <p class="text-gray-400 mt-1">Manage your info, privacy, and security to make TheBoiisMC work better for you.</p>
+         <a href="https://accounts.theboiismc.com/if/user/#/settings" target="_blank" class="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-zinc-900 font-semibold rounded-full hover:bg-zinc-200 transition-colors text-sm">
+           <span class="material-symbols-rounded text-lg">manage_accounts</span>
+           Manage Profile
+         </a>
       </div>
     </div>
 
     <!-- TAB: HOME -->
-    <div id="tab-home" class="tab-content space-y-8 animate-fade-in">
+    <div id="tab-home" class="tab-content animate-fade-in space-y-6">
       <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         
         <!-- Privacy/Security Card -->
-        <div class="glass-panel rounded-2xl p-6 hover:bg-gray-800/50 transition cursor-pointer relative group">
-          <div class="absolute top-6 right-6 text-green-400">
-            <span class="material-symbols-outlined text-4xl">shield_lock</span>
+        <div onclick="switchTab('security')" class="dashboard-card rounded-2xl p-6 cursor-pointer group relative overflow-hidden">
+          <div class="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
+            <span class="material-symbols-rounded text-8xl text-indigo-500 -mr-4 -mt-4">shield_lock</span>
           </div>
-          <h3 class="text-xl font-semibold mb-2">Security Checkup</h3>
-          <p class="text-sm text-gray-400 mb-8 pr-10">Your account is protected by Authentik. Review your login methods and recent activity.</p>
-          <a href="https://accounts.theboiismc.com/if/user/#/settings" target="_blank" class="text-[#6366F1] font-medium group-hover:underline">Review settings</a>
+          <div class="relative z-10">
+             <div class="w-12 h-12 rounded-xl bg-indigo-500/10 flex items-center justify-center mb-4 text-indigo-400 group-hover:scale-110 transition-transform duration-300">
+               <span class="material-symbols-rounded text-2xl">shield_person</span>
+             </div>
+             <h3 class="text-lg font-semibold text-white mb-2">Security Checkup</h3>
+             <p class="text-sm text-zinc-400 mb-6 leading-relaxed">Your account is protected by standard encryption and Authentik protocols.</p>
+             <span class="text-indigo-400 text-sm font-medium group-hover:underline flex items-center gap-1">
+               Review security <span class="material-symbols-rounded text-base">arrow_forward</span>
+             </span>
+          </div>
+        </div>
+
+        <!-- Personal Info Card -->
+        <div onclick="switchTab('personal-info')" class="dashboard-card rounded-2xl p-6 cursor-pointer group relative overflow-hidden">
+          <div class="relative z-10">
+             <div class="w-12 h-12 rounded-xl bg-pink-500/10 flex items-center justify-center mb-4 text-pink-400 group-hover:scale-110 transition-transform duration-300">
+               <span class="material-symbols-rounded text-2xl">badge</span>
+             </div>
+             <h3 class="text-lg font-semibold text-white mb-2">Personal Info</h3>
+             <p class="text-sm text-zinc-400 mb-6 leading-relaxed">Update your display name, email preferences, and public profile details.</p>
+             <span class="text-pink-400 text-sm font-medium group-hover:underline flex items-center gap-1">
+               Edit details <span class="material-symbols-rounded text-base">arrow_forward</span>
+             </span>
+          </div>
         </div>
 
         <!-- Storage Card -->
-        <div class="glass-panel rounded-2xl p-6 hover:bg-gray-800/50 transition cursor-pointer relative group">
-          <div class="absolute top-6 right-6 text-blue-400">
-            <span class="material-symbols-outlined text-4xl">cloud_queue</span>
+        <a href="https://drive.theboiismc.com" class="dashboard-card rounded-2xl p-6 cursor-pointer group relative overflow-hidden block">
+          <div class="relative z-10">
+             <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center mb-4 text-blue-400 group-hover:scale-110 transition-transform duration-300">
+               <span class="material-symbols-rounded text-2xl">cloud</span>
+             </div>
+             <h3 class="text-lg font-semibold text-white mb-2">Account Storage</h3>
+             <p class="text-sm text-zinc-400 mb-4 leading-relaxed">Manage your data across Drive, Photos, and Media.</p>
+             
+             <!-- Mock Usage Bar -->
+             <div class="flex items-center justify-between text-xs text-zinc-500 mb-2 font-medium">
+               <span>Usage</span>
+               <span>15%</span>
+             </div>
+             <div class="w-full bg-zinc-800 h-2 rounded-full overflow-hidden">
+                <div class="bg-blue-500 h-full rounded-full w-[15%]"></div>
+             </div>
           </div>
-          <h3 class="text-xl font-semibold mb-2">Account Storage</h3>
-          <p class="text-sm text-gray-400 mb-4 pr-10">Your storage is shared across Drive, Photos, and Media.</p>
-          <!-- Mock Progress Bar -->
-          <div class="w-full bg-gray-700 h-2 rounded-full mb-4 overflow-hidden">
-            <div class="bg-blue-500 h-2 rounded-full" style="width: 15%"></div>
-          </div>
-          <a href="https://drive.theboiismc.com" class="text-[#6366F1] font-medium group-hover:underline">Manage storage</a>
-        </div>
+        </a>
 
-        <!-- Personalization -->
-        <div class="glass-panel rounded-2xl p-6 hover:bg-gray-800/50 transition cursor-pointer relative group">
-          <div class="absolute top-6 right-6 text-purple-400">
-            <span class="material-symbols-outlined text-4xl">palette</span>
-          </div>
-          <h3 class="text-xl font-semibold mb-2">Personalization</h3>
-          <p class="text-sm text-gray-400 mb-8 pr-10">Manage your profile picture, display name, and interface themes.</p>
-          <button onclick="document.querySelector('[data-tab=\'personal-info\']').click()" class="text-[#6366F1] font-medium group-hover:underline">Edit profile</button>
-        </div>
+      </div>
 
+      <!-- Feature Highlight -->
+      <div class="dashboard-card rounded-2xl p-8 flex flex-col md:flex-row items-center gap-8 mt-8 border-indigo-500/20 bg-indigo-900/5">
+        <div class="flex-1">
+          <h2 class="text-xl font-bold text-white mb-2">Privacy is our default.</h2>
+          <p class="text-zinc-400 leading-relaxed mb-6">
+            Unlike other platforms, we do not sell your data. Your activity on TheBoiisMC is private, encrypted, and owned by you.
+          </p>
+          <a href="https://www.theboiismc.com/privacy.html" class="text-sm font-semibold text-white bg-zinc-800 hover:bg-zinc-700 px-5 py-2.5 rounded-lg transition-colors">
+            Read Privacy Policy
+          </a>
+        </div>
+        <div class="hidden md:block">
+           <span class="material-symbols-rounded text-[120px] text-indigo-500/20">lock</span>
+        </div>
       </div>
     </div>
 
     <!-- TAB: PERSONAL INFO -->
-    <div id="tab-personal-info" class="tab-content hidden space-y-6">
+    <div id="tab-personal-info" class="tab-content hidden space-y-8 animate-fade-in">
       <div class="max-w-3xl">
-        <h2 class="text-2xl font-bold mb-2">Personal Info</h2>
-        <p class="text-gray-400 mb-8">Basic info, like your name and photo, that you use on TheBoiisMC services.</p>
+        <h2 class="text-2xl font-bold text-white mb-2">Personal Info</h2>
+        <p class="text-zinc-400 mb-8">Details about you and your preferences.</p>
 
-        <div class="glass-panel rounded-2xl overflow-hidden divide-y divide-gray-800">
-          <div class="p-6 flex items-center justify-between hover:bg-gray-800/30 transition">
-            <div class="text-sm font-medium text-gray-400 w-1/4">Profile Picture</div>
-            <div class="flex-1 flex items-center justify-end">
-               <div id="info-avatar" class="w-10 h-10 rounded-full bg-[#6366F1] flex items-center justify-center text-sm font-bold text-white"></div>
-            </div>
-            <div class="w-10 flex justify-end">
-               <!-- Avatar changes usually handled by Gravatar or Authentik -->
-               <a href="https://accounts.theboiismc.com/if/user/#/settings" target="_blank" class="text-gray-500 hover:text-white"><span class="material-symbols-outlined">chevron_right</span></a>
-            </div>
-          </div>
-
-          <div class="p-6 flex items-center justify-between hover:bg-gray-800/30 transition">
-            <div class="text-sm font-medium text-gray-400 w-1/4">Name</div>
-            <div id="info-name" class="flex-1 text-right text-white font-medium pr-4"></div>
-            <div class="w-10 flex justify-end">
-               <a href="https://accounts.theboiismc.com/if/user/#/settings" target="_blank" class="text-gray-500 hover:text-white"><span class="material-symbols-outlined">chevron_right</span></a>
-            </div>
-          </div>
-
-          <div class="p-6 flex items-center justify-between hover:bg-gray-800/30 transition">
-            <div class="text-sm font-medium text-gray-400 w-1/4">Email</div>
-            <div id="info-email" class="flex-1 text-right text-white font-medium pr-4"></div>
-            <div class="w-10 flex justify-end">
-               <a href="https://accounts.theboiismc.com/if/user/#/settings" target="_blank" class="text-gray-500 hover:text-white"><span class="material-symbols-outlined">chevron_right</span></a>
-            </div>
-          </div>
+        <div class="dashboard-card rounded-2xl overflow-hidden divide-y divide-zinc-800/50">
           
-          <div class="p-6 flex items-center justify-between hover:bg-gray-800/30 transition">
-            <div class="text-sm font-medium text-gray-400 w-1/4">Username</div>
-            <div id="info-username" class="flex-1 text-right text-white font-medium pr-4"></div>
-            <div class="w-10 flex justify-end">
-               <span class="material-symbols-outlined text-gray-600 cursor-not-allowed">lock</span>
+          <!-- Avatar Row -->
+          <div class="p-6 flex items-center justify-between hover:bg-zinc-800/30 transition group cursor-pointer" onclick="window.open('https://accounts.theboiismc.com/if/user/#/settings', '_blank')">
+            <div class="w-1/3">
+               <span class="text-sm font-medium text-zinc-400">Profile Picture</span>
+            </div>
+            <div class="flex-1 flex justify-end pr-4">
+               <div id="info-avatar" class="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center text-lg font-bold text-white"></div>
+            </div>
+            <div class="w-8 flex justify-end text-zinc-600 group-hover:text-white transition-colors">
+               <span class="material-symbols-rounded">chevron_right</span>
             </div>
           </div>
+
+          <!-- Name Row -->
+          <div class="p-6 flex items-center justify-between hover:bg-zinc-800/30 transition group cursor-pointer" onclick="window.open('https://accounts.theboiismc.com/if/user/#/settings', '_blank')">
+            <div class="w-1/3">
+               <span class="text-sm font-medium text-zinc-400">Display Name</span>
+            </div>
+            <div id="info-name" class="flex-1 text-right text-white font-medium pr-4"></div>
+            <div class="w-8 flex justify-end text-zinc-600 group-hover:text-white transition-colors">
+               <span class="material-symbols-rounded">chevron_right</span>
+            </div>
+          </div>
+
+          <!-- Email Row -->
+          <div class="p-6 flex items-center justify-between hover:bg-zinc-800/30 transition group cursor-pointer" onclick="window.open('https://accounts.theboiismc.com/if/user/#/settings', '_blank')">
+            <div class="w-1/3">
+               <span class="text-sm font-medium text-zinc-400">Email Address</span>
+            </div>
+            <div id="info-email" class="flex-1 text-right text-white font-medium pr-4"></div>
+            <div class="w-8 flex justify-end text-zinc-600 group-hover:text-white transition-colors">
+               <span class="material-symbols-rounded">chevron_right</span>
+            </div>
+          </div>
+
         </div>
 
-        <div class="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl flex items-start gap-4">
-          <span class="material-symbols-outlined text-blue-400">info</span>
-          <div class="text-sm text-gray-300">
-            <p class="font-semibold text-blue-400 mb-1">Managed by Authentik</p>
-            Some details can only be edited in the central identity provider. Clicking the arrows above will take you to the secure account settings page.
+        <div class="mt-6 flex gap-4 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-200 text-sm">
+          <span class="material-symbols-rounded shrink-0">verified_user</span>
+          <div>
+            <p class="font-semibold mb-1">Managed by Authentik</p>
+            Your core identity profile is managed centrally. Changes made here sync across all apps immediately.
           </div>
         </div>
       </div>
     </div>
 
     <!-- TAB: SECURITY -->
-    <div id="tab-security" class="tab-content hidden space-y-6">
+    <div id="tab-security" class="tab-content hidden space-y-8 animate-fade-in">
        <div class="max-w-3xl">
-        <h2 class="text-2xl font-bold mb-2">Data & Security</h2>
-        <p class="text-gray-400 mb-8">Settings to help you keep your account secure.</p>
+        <h2 class="text-2xl font-bold text-white mb-2">Data & Security</h2>
+        <p class="text-zinc-400 mb-8">Review security settings and active sessions.</p>
 
-        <!-- Password Card -->
-        <div class="glass-panel rounded-2xl p-6 mb-6">
-          <h3 class="text-lg font-semibold mb-4">Signing in to TheBoiisMC</h3>
-          <div class="divide-y divide-gray-800">
-            <a href="https://accounts.theboiismc.com/if/flow/default-password-change/" target="_blank" class="py-4 flex items-center justify-between group hover:bg-gray-800/30 rounded px-2 -mx-2 transition">
+        <!-- Login Methods -->
+        <div class="dashboard-card rounded-2xl p-6 mb-6">
+          <h3 class="text-lg font-semibold text-white mb-6">How you sign in</h3>
+          <div class="divide-y divide-zinc-800/50">
+            
+            <a href="https://accounts.theboiismc.com/if/flow/default-password-change/" target="_blank" class="py-4 flex items-center justify-between group hover:bg-zinc-800/30 rounded-lg px-3 -mx-3 transition">
               <div class="flex items-center gap-4">
-                <span class="material-symbols-outlined text-gray-400">password</span>
+                <div class="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400">
+                  <span class="material-symbols-rounded">key</span>
+                </div>
                 <div>
-                  <div class="font-medium text-gray-200">Password</div>
-                  <div class="text-xs text-gray-500">Last changed: (Managed in Authentik)</div>
+                  <div class="font-medium text-white">Password</div>
+                  <div class="text-xs text-zinc-500">Last changed: (See Authentik)</div>
                 </div>
               </div>
-              <span class="material-symbols-outlined text-gray-500 group-hover:text-white">chevron_right</span>
+              <span class="material-symbols-rounded text-zinc-600 group-hover:text-white transition-colors">chevron_right</span>
             </a>
 
-            <a href="https://accounts.theboiismc.com/if/user/#/settings" target="_blank" class="py-4 flex items-center justify-between group hover:bg-gray-800/30 rounded px-2 -mx-2 transition">
+            <a href="https://accounts.theboiismc.com/if/user/#/settings" target="_blank" class="py-4 flex items-center justify-between group hover:bg-zinc-800/30 rounded-lg px-3 -mx-3 transition">
               <div class="flex items-center gap-4">
-                <span class="material-symbols-outlined text-gray-400">phonelink_lock</span>
+                <div class="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400">
+                  <span class="material-symbols-rounded">phonelink_lock</span>
+                </div>
                 <div>
-                  <div class="font-medium text-gray-200">2-Step Verification</div>
-                  <div class="text-xs text-gray-500">Add an extra layer of security with TOTP or WebAuthn</div>
+                  <div class="font-medium text-white">2-Step Verification</div>
+                  <div class="text-xs text-zinc-500">Recommended for higher security</div>
                 </div>
               </div>
-              <span class="material-symbols-outlined text-gray-500 group-hover:text-white">chevron_right</span>
+              <span class="material-symbols-rounded text-zinc-600 group-hover:text-white transition-colors">chevron_right</span>
             </a>
+
           </div>
         </div>
 
-        <!-- Devices Card -->
-        <div class="glass-panel rounded-2xl p-6">
-          <h3 class="text-lg font-semibold mb-4">Your Devices</h3>
-          <p class="text-sm text-gray-400 mb-4">You are currently signed in on this device.</p>
-          <div class="flex items-center gap-4 p-4 bg-gray-800/50 rounded-xl border border-gray-700">
-            <span class="material-symbols-outlined text-green-400 text-3xl">devices</span>
-            <div>
-              <div class="font-medium text-white">Current Session</div>
-              <div class="text-xs text-green-400">Active now</div>
-            </div>
+        <!-- Active Sessions -->
+        <div class="dashboard-card rounded-2xl p-6">
+          <h3 class="text-lg font-semibold text-white mb-4">Your Devices</h3>
+          
+          <div class="flex items-center gap-4 p-4 bg-green-500/10 border border-green-500/20 rounded-xl mb-6">
+             <span class="material-symbols-rounded text-green-400 text-2xl">devices</span>
+             <div>
+               <div class="font-medium text-white text-sm">This Device</div>
+               <div class="text-xs text-green-400">Active Session • HTTPS Encrypted</div>
+             </div>
           </div>
-          <div class="mt-4 text-right">
-             <a href="https://accounts.theboiismc.com/if/user/#/sessions" target="_blank" class="text-[#6366F1] text-sm font-medium hover:underline">Manage all sessions</a>
+
+          <div class="text-right">
+             <a href="https://accounts.theboiismc.com/if/user/#/sessions" target="_blank" class="text-indigo-400 text-sm font-medium hover:text-indigo-300 hover:underline transition-colors">
+               Manage all sessions
+             </a>
           </div>
         </div>
 
@@ -259,9 +364,105 @@
 
   </main>
 
-  <!-- Dependencies -->
-  <script src="https://cdn.jsdelivr.net/npm/oidc-client-ts@2.2.0/dist/browser/oidc-client-ts.min.js"></script>
-  <script src="/js/main.js"></script>
-  <script src="/js/auth.js"></script>
+  <script>
+    // --- AUTH CONFIGURATION ---
+    const CLIENT_ID = 'yopePhMvPt1dj65UFbmVkxHIuX7MDeeNBoobKSQy'; 
+    const AUTH_URL = 'https://accounts.theboiismc.com/application/o/theboiismc/'; 
+    const origin = window.location.origin;
+
+    const settings = {
+        authority: AUTH_URL,
+        client_id: CLIENT_ID,
+        redirect_uri: `${origin}/callback.html`, 
+        scope: 'openid profile email offline_access',
+        post_logout_redirect_uri: 'https://www.theboiismc.com', 
+        response_type: 'code',
+        silent_redirect_uri: `${origin}/silent-renew.html`,
+        automaticSilentRenew: true,
+    };
+
+    const userManager = new oidc.UserManager(settings);
+
+    // --- UI ELEMENTS ---
+    const heroName = document.getElementById('hero-name');
+    const heroAvatar = document.getElementById('hero-avatar');
+    const infoAvatar = document.getElementById('info-avatar');
+    const infoName = document.getElementById('info-name');
+    const infoEmail = document.getElementById('info-email');
+    const sidebar = document.getElementById('sidebar');
+
+    // --- UPDATE UI FUNCTION ---
+    function updateDashboardUI(user) {
+        if (!user) return;
+        const profile = user.profile;
+        const displayName = profile.given_name || profile.nickname || profile.name || profile.email.split('@')[0];
+        const email = profile.email || 'No email';
+        const initials = displayName.charAt(0).toUpperCase();
+
+        if (heroName) heroName.textContent = displayName;
+        if (heroAvatar) heroAvatar.textContent = initials;
+        if (infoName) infoName.textContent = displayName;
+        if (infoEmail) infoEmail.textContent = email;
+        if (infoAvatar) infoAvatar.textContent = initials;
+        
+        // REVEAL PAGE
+        document.getElementById('app-body').classList.add('cloak-revealed');
+    }
+
+    // --- TAB SWITCHER ---
+    function switchTab(targetId) {
+        // Reset Nav Links
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.classList.remove('active');
+            link.classList.add('text-zinc-400');
+            link.classList.remove('text-indigo-400', 'bg-indigo-500/10');
+        });
+
+        // Hide All Content
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+
+        // Activate Tab
+        const activeLink = document.getElementById(`nav-${targetId}`);
+        if(activeLink) {
+            activeLink.classList.add('active');
+            activeLink.classList.remove('text-zinc-400');
+        }
+        
+        const targetContent = document.getElementById(`tab-${targetId}`);
+        if(targetContent) {
+            targetContent.classList.remove('hidden');
+        }
+
+        // Close Mobile Menu
+        if (window.innerWidth < 768) {
+            sidebar.classList.add('hidden');
+        }
+    }
+
+    // --- AUTH CHECK ---
+    async function requireAuth() {
+        try {
+            const user = await userManager.getUser();
+            if (user && !user.expired) {
+                updateDashboardUI(user);
+            } else {
+                userManager.signinRedirect();
+            }
+        } catch (error) {
+            console.error('Auth Error', error);
+            userManager.signinRedirect();
+        }
+    }
+    
+    // --- EVENT LISTENERS ---
+    document.getElementById('sign-out-btn').addEventListener('click', () => userManager.signoutRedirect());
+    document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+        sidebar.classList.toggle('hidden');
+        sidebar.classList.add('fixed', 'inset-0', 'bg-black', 'z-50', 'w-full', 'pt-20');
+    });
+
+    // Start
+    requireAuth();
+  </script>
 </body>
 </html>
