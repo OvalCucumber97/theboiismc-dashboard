@@ -3,248 +3,199 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Account Management — TheBoiisMC</title>
-  
-  <script src="https://cdn.tailwindcss.com"></script> 
-  
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+  <title>Google Account</title> <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
   
   <style>
-    /* UPDATED: Aligned CSS variables with main site's dark palette */
-    :root { 
-        --bg-body: #030712; /* Deepest black/gray (matching main site bg-bg-main) */
-        --bg-panel: #111827; /* Dark surface (matching main site bg-surface) */
-        --border-color: #27272a; 
-        --primary: #6366F1; /* Your Brand Indigo */
+    :root {
+      --bg-body: #1f1f1f;
+      --bg-surface: #303030;
+      --primary: #a8c7fa; /* Google Blue Light */
+      --on-surface: #e3e3e3;
+      --border: #444746;
     }
-    /* UPDATED: Removed Inter font to use system font (matching main site) and using new color vars */
-    body { 
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-        background-color: var(--bg-body); 
-        color: #e4e4e7;
+    body {
+      font-family: 'Google Sans', Roboto, Arial, sans-serif;
+      background-color: var(--bg-body);
+      color: var(--on-surface);
     }
-    *:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 4px;
+    /* Google Material Card Style */
+    .g-card {
+      background-color: var(--bg-surface);
+      border-radius: 24px;
+      border: 1px solid transparent;
     }
-    .dashboard-card { background-color: rgba(17, 24, 39, 0.6); /* Using var(--bg-panel) equivalent for transparent effect */ backdrop-filter: blur(12px); border: 1px solid var(--border-color);
-    transition: all 0.2s ease-in-out; }
-    .dashboard-card:hover { border-color: #3f3f46; background-color: rgba(17, 24, 39, 0.8);
+    .g-card:hover {
+      border-color: #555;
     }
-    .nav-link.active { background-color: rgba(99, 102, 241, 0.1); color: #818cf8; border-left: 3px solid var(--primary);
+    .g-btn {
+      transition: background 0.2s;
     }
-    .nav-link { border-left: 3px solid transparent;
+    /* Modal Backdrop */
+    .modal-backdrop {
+      background-color: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
     }
-    
-    /* Simple fade in for content once loaded */
-    .animate-fade-in { animation: fadeIn 0.5s ease-out;
-    }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0);
-    } }
   </style>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
 </head>
 
-<body class="antialiased min-h-screen flex flex-col md:flex-row">
+<body class="flex flex-col md:flex-row min-h-screen">
 
-  <header class="md:hidden flex items-center justify-between p-4 border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-md sticky top-0 z-50">
+  <header class="md:hidden flex items-center justify-between p-4 bg-[#1f1f1f] sticky top-0 z-50">
     <div class="flex items-center gap-2">
-      <div class="w-8 h-8 rounded-lg" style="background: linear-gradient(to bottom right, #6366F1, #3b82f6); box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3); display: flex; align-items: center; justify-content: center; text-white font-bold;">
-          <i class="fa-solid fa-cloud text-lg"></i>
-      </div>
-      <span class="font-semibold text-white tracking-tight">TheBoiis<span style="color: #6366F1;">MC</span> Account</span>
+      <span class="material-symbols-outlined text-3xl text-white">account_circle</span>
+      <span class="text-xl font-medium">Account</span>
     </div>
-    <button id="mobile-menu-btn" class="p-2 text-zinc-400 hover:text-white rounded-lg active:bg-zinc-800"><span class="material-symbols-rounded">menu</span></button>
+    <button id="mobile-menu-btn" class="p-2 rounded-full hover:bg-white/10">
+      <span class="material-symbols-outlined">menu</span>
+    </button>
   </header>
 
-  <aside id="sidebar" class="hidden md:flex flex-col w-72 border-r border-zinc-800 bg-[var(--bg-panel)] h-screen fixed md:sticky top-0 z-40 overflow-y-auto">
-    <div class="p-6 pb-2">
-      <a href="https://www.theboiismc.com" class="flex items-center gap-3 mb-8 group">
-        <div class="w-8 h-8 rounded-lg" style="background: linear-gradient(to bottom right, #6366F1, #3b82f6); box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3); display: flex; align-items: center; justify-content: center; text-white font-bold;">
-          <i class="fa-solid fa-cloud text-lg"></i>
-        </div>
-        <div><h1 class="font-bold text-white leading-none">TheBoiis<span style="color: #6366F1;">MC</span></h1><p class="text-xs text-zinc-500 mt-1 font-medium">Account Center</p></div>
+  <aside id="sidebar" class="hidden md:flex flex-col w-72 h-screen sticky top-0 p-4 overflow-y-auto bg-[#1f1f1f]">
+    <div class="px-4 py-6 mb-2">
+      <a href="https://www.theboiismc.com" class="flex items-center gap-2 text-2xl font-medium text-white mb-1">
+        <span class="text-[#a8c7fa]">TheBoiis</span>MC
       </a>
     </div>
 
-    <nav class="flex-1 px-3 space-y-1" role="navigation">
-      <button onclick="switchTab('home')" id="nav-home" aria-controls="tab-home" class="nav-link active w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-r-lg text-white hover:bg-zinc-900 transition-all group">
-        <span class="material-symbols-rounded text-zinc-400 group-hover:text-white group-[.active]:text-indigo-400">dashboard</span> Home
+    <nav class="space-y-1">
+      <button onclick="switchTab('home')" id="nav-home" class="nav-link active w-full flex items-center gap-4 px-6 py-3.5 rounded-r-full text-[15px] font-medium bg-[#004a77] text-[#c2e7ff]">
+        <span class="material-symbols-outlined text-[22px]">home</span> Home
       </button>
-      <button onclick="switchTab('personal-info')" id="nav-personal-info" aria-controls="tab-personal-info" class="nav-link w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-r-lg text-zinc-400 hover:bg-zinc-900 hover:text-white transition-all group">
-        <span class="material-symbols-rounded text-zinc-500 group-hover:text-white">badge</span> Personal Info
+      <button onclick="switchTab('personal')" id="nav-personal" class="nav-link w-full flex items-center gap-4 px-6 py-3.5 rounded-r-full text-[15px] font-medium text-[#e3e3e3] hover:bg-white/5">
+        <span class="material-symbols-outlined text-[22px]">badge</span> Personal info
       </button>
-      <button onclick="switchTab('security')" id="nav-security" aria-controls="tab-security" class="nav-link w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-r-lg text-zinc-400 hover:bg-zinc-900 hover:text-white transition-all group">
-        <span class="material-symbols-rounded text-zinc-500 group-hover:text-white">lock</span> Data & Security
+      <button onclick="switchTab('security')" id="nav-security" class="nav-link w-full flex items-center gap-4 px-6 py-3.5 rounded-r-full text-[15px] font-medium text-[#e3e3e3] hover:bg-white/5">
+        <span class="material-symbols-outlined text-[22px]">security</span> Data & privacy
       </button>
-      
-      <div class="pt-6 mt-4 border-t border-zinc-800/50 px-4">
-        <p class="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3">Connected Apps</p>
-        <div class="space-y-1">
-          <a href="https://drive.theboiismc.com" class="flex items-center gap-3 px-3 py-2 text-sm text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-lg transition-colors">
-            <span class="material-symbols-rounded text-blue-500 text-lg">cloud</span> Drive
-          </a>
-          <a href="https://photos.theboiismc.com" class="flex items-center gap-3 px-3 py-2 text-sm text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-lg transition-colors">
-            <span class="material-symbols-rounded text-yellow-500 text-lg">photo_library</span> Photos
-          </a>
-        </div>
-      </div>
     </nav>
-
-    <div class="p-4 border-t border-zinc-800 mt-auto">
-      <a href="/logout" class="flex items-center justify-between w-full px-4 py-3 text-sm font-medium text-red-400 bg-red-500/5 hover:bg-red-500/10 border border-red-500/10 rounded-xl transition-all 
-group">
-        <span>Sign out</span> <span class="material-symbols-rounded text-lg">logout</span>
-      </a>
+    
+    <div class="mt-auto px-4">
+       <a href="/logout" class="flex items-center gap-3 px-4 py-3 text-red-300 hover:bg-red-900/20 rounded-lg transition">
+         <span class="material-symbols-outlined">logout</span> Sign out
+       </a>
     </div>
   </aside>
 
-  <main id="main-content" class="flex-1 p-6 lg:p-12 overflow-y-auto max-w-7xl mx-auto w-full">
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 pb-6 border-b border-zinc-800">
-      <div class="flex items-center gap-5">
-        <div id="hero-avatar" class="w-16 h-16 rounded-full bg-indigo-600 flex items-center justify-center text-2xl font-bold text-white shadow-xl ring-4 ring-zinc-900 select-none">?</div>
-        <div>
-          <h1 class="text-3xl font-bold text-white tracking-tight">Welcome, <span id="hero-name">User</span></h1>
-          <div class="flex items-center gap-2 mt-1 text-sm text-zinc-400">
-            <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-            <span>Account secure & active</span>
-          </div>
-        </div>
+  <main class="flex-1 p-4 md:p-12 max-w-5xl mx-auto w-full overflow-y-auto">
+    
+    <div class="flex items-center gap-4 mb-12">
+      <div id="hero-avatar" class="w-20 h-20 rounded-full bg-[#a8c7fa] text-[#001d35] text-3xl font-medium flex items-center justify-center">U</div>
+      <div>
+        <h1 class="text-3xl font-normal text-white">Welcome, <span id="hero-name">User</span></h1>
+        <p class="text-[#c4c7c5] mt-1">Manage your info, privacy, and security.</p>
       </div>
     </div>
 
-    <div id="tab-home" class="tab-content animate-fade-in 
-space-y-6">
-      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div onclick="switchTab('security')" class="dashboard-card rounded-2xl p-6 cursor-pointer group relative overflow-hidden">
-          <div class="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity"><span class="material-symbols-rounded text-8xl text-indigo-500 -mr-4 -mt-4">shield_lock</span></div>
-          <div class="relative z-10">
-             <div class="w-12 h-12 rounded-xl bg-indigo-500/10 flex items-center justify-center mb-4 text-indigo-400 group-hover:scale-110 transition-transform"><span class="material-symbols-rounded text-2xl">shield_person</span></div>
-             <h3 
-             class="text-lg font-semibold text-white mb-2">Security Checkup</h3>
-             <p class="text-sm text-zinc-400 mb-6">Your account is protected by standard encryption and Authentik protocols.</p>
-             <span class="text-indigo-400 text-sm font-medium group-hover:underline flex items-center gap-1">Review security <span class="material-symbols-rounded text-base">arrow_forward</span></span>
-          </div>
-        </div>
-
-        <div onclick="switchTab('personal-info')" class="dashboard-card rounded-2xl p-6 cursor-pointer group relative overflow-hidden">
-          <div class="relative z-10">
- 
-             <div class="w-12 h-12 rounded-xl bg-pink-500/10 flex items-center justify-center mb-4 text-pink-400 group-hover:scale-110 transition-transform"><span class="material-symbols-rounded text-2xl">badge</span></div>
-             <h3 class="text-lg font-semibold text-white mb-2">Personal Info</h3>
-             <p class="text-sm text-zinc-400 mb-6">Update your display name, email preferences, and public profile details.</p>
-             <span class="text-pink-400 text-sm font-medium group-hover:underline flex items-center gap-1">Edit details <span class="material-symbols-rounded text-base">arrow_forward</span></span>
+    <div id="tab-home" class="tab-content space-y-6">
+      <div class="grid md:grid-cols-2 gap-4">
         
+        <div class="g-card p-6 flex flex-col justify-between">
+          <div>
+            <h3 class="text-xl font-normal mb-2">Privacy & personalization</h3>
+            <p class="text-[#c4c7c5] text-sm mb-6">See the data in your Account and choose what activity is saved to personalize your experience.</p>
           </div>
+          <button onclick="switchTab('security')" class="text-[#a8c7fa] font-medium text-sm self-start hover:bg-[#a8c7fa]/10 px-4 py-2 rounded-full -ml-4">Manage your data & privacy</button>
         </div>
 
-        <a href="https://drive.theboiismc.com" class="dashboard-card rounded-2xl p-6 cursor-pointer group relative overflow-hidden block">
-          <div class="relative z-10">
-             <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center mb-4 text-blue-400 group-hover:scale-110 transition-transform"><span class="material-symbols-rounded text-2xl">cloud</span></div>
-             <h3 class="text-lg font-semibold text-white mb-2">Account Storage</h3>
-             <p class="text-sm text-zinc-400 mb-4">Manage 
-             your data across Drive, Photos, and Media.</p>
-             <div class="w-full bg-zinc-800 h-2 rounded-full overflow-hidden"><div class="bg-blue-500 h-full rounded-full w-[15%]"></div></div>
+        <div class="g-card p-6 flex flex-col justify-between">
+          <div>
+            <div class="flex items-start justify-between">
+                <h3 class="text-xl font-normal mb-2">Security recommendations</h3>
+                <span class="material-symbols-outlined text-green-400 text-4xl">verified_user</span>
+            </div>
+            <p class="text-[#c4c7c5] text-sm mb-6">Your account is currently protected by Authentik MFA protocols.</p>
           </div>
-        </a>
+          <a href="https://accounts.theboiismc.com/if/user/#/settings" target="_blank" class="text-[#a8c7fa] font-medium text-sm self-start hover:bg-[#a8c7fa]/10 px-4 py-2 rounded-full -ml-4">Protect your account</a>
+        </div>
+      </div>
+
+      <h2 class="text-xl mt-8 mb-4">Your Apps</h2>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+         <a href="https://drive.theboiismc.com" class="g-card p-4 hover:bg-[#3d3d3d] transition flex flex-col items-center justify-center gap-3 text-center h-32 no-underline text-white">
+            <span class="material-symbols-outlined text-4xl text-blue-400">cloud</span>
+            <span class="text-sm font-medium">Drive</span>
+         </a>
+         <a href="https://photos.theboiismc.com" class="g-card p-4 hover:bg-[#3d3d3d] transition flex flex-col items-center justify-center gap-3 text-center h-32 no-underline text-white">
+            <span class="material-symbols-outlined text-4xl text-yellow-400">photo_library</span>
+            <span class="text-sm font-medium">Photos</span>
+         </a>
+         <a href="https://maps.theboiismc.com" class="g-card p-4 hover:bg-[#3d3d3d] transition flex flex-col items-center justify-center gap-3 text-center h-32 no-underline text-white">
+            <span class="material-symbols-outlined text-4xl text-green-400">map</span>
+            <span class="text-sm font-medium">Maps</span>
+         </a>
+         <a href="https://search.theboiismc.com" class="g-card p-4 hover:bg-[#3d3d3d] transition flex flex-col items-center justify-center gap-3 text-center h-32 no-underline text-white">
+            <span class="material-symbols-outlined text-4xl text-red-400">search</span>
+            <span class="text-sm font-medium">Search</span>
+         </a>
       </div>
     </div>
 
-    <div id="tab-personal-info" class="tab-content hidden space-y-8 animate-fade-in">
+    <div id="tab-personal" class="tab-content hidden space-y-6">
       <div class="max-w-3xl">
-        <h2 class="text-2xl font-bold text-white mb-2">Personal Info</h2>
-       
-        <div class="dashboard-card rounded-2xl overflow-hidden divide-y divide-zinc-800/50">
-          <div class="p-6 flex items-center justify-between hover:bg-zinc-800/30 transition cursor-pointer" onclick="window.open('https://accounts.theboiismc.com/if/user/#/settings', '_blank')">
-            <span class="text-sm font-medium text-zinc-400 w-1/3">Profile Picture</span>
-            <div class="flex-1 flex justify-end pr-4"><div id="info-avatar" class="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center text-lg font-bold text-white"></div></div>
-            <span class="material-symbols-rounded text-zinc-600">chevron_right</span>
+        <h2 class="text-2xl font-normal mb-2">Basic info</h2>
+        <p class="text-[#c4c7c5] mb-6">Some info may be visible to other people using TheBoiisMC services.</p>
+
+        <div class="g-card overflow-hidden">
+          <div class="flex items-center justify-between p-4 px-6 border-b border-[#444746] hover:bg-[#3d3d3d] transition cursor-pointer" onclick="openEditModal('avatar')">
+            <span class="text-sm text-[#c4c7c5] w-32">Profile picture</span>
+            <div class="flex-1 flex justify-end pr-2"><div id="info-avatar-small" class="w-10 h-10 rounded-full bg-[#a8c7fa] text-[#001d35] flex items-center justify-center font-bold">U</div></div>
+            </div>
+
+          <div class="flex items-center justify-between p-4 px-6 border-b border-[#444746] hover:bg-[#3d3d3d] transition cursor-pointer" onclick="openEditModal('name')">
+            <span class="text-sm text-[#c4c7c5] w-32">Name</span>
+            <div id="info-name" class="flex-1 text-white pr-2 text-right">Loading...</div>
+            <span class="material-symbols-outlined text-[#c4c7c5]">chevron_right</span>
           </div>
-       
-          <div class="p-6 flex items-center justify-between hover:bg-zinc-800/30 transition cursor-pointer" onclick="window.open('https://accounts.theboiismc.com/if/user/#/settings', '_blank')">
-            <span class="text-sm font-medium text-zinc-400 w-1/3">Display Name</span>
-            <div id="info-name" class="flex-1 text-right text-white font-medium pr-4"></div>
-            <span class="material-symbols-rounded text-zinc-600">chevron_right</span>
-          </div>
-          <div class="p-6 flex items-center justify-between hover:bg-zinc-800/30 transition cursor-pointer" onclick="window.open('https://accounts.theboiismc.com/if/user/#/settings', '_blank')">
-          
-          <span class="text-sm font-medium text-zinc-400 w-1/3">Email Address</span>
-            <div id="info-email" class="flex-1 text-right text-white font-medium pr-4"></div>
-            <span class="material-symbols-rounded text-zinc-600">chevron_right</span>
+
+          <div class="flex items-center justify-between p-4 px-6 hover:bg-[#3d3d3d] transition cursor-pointer" onclick="openEditModal('email')">
+            <span class="text-sm text-[#c4c7c5] w-32">Email</span>
+            <div id="info-email" class="flex-1 text-white pr-2 text-right">Loading...</div>
+            <span class="material-symbols-outlined text-[#c4c7c5]">chevron_right</span>
           </div>
         </div>
       </div>
     </div>
 
-    <div id="tab-security" class="tab-content hidden space-y-8 animate-fade-in">
-       <div class="max-w-3xl">
-        <h2 
-        class="text-2xl font-bold text-white mb-2">Data & Security</h2>
-        
-        <div class="dashboard-card rounded-2xl p-6 mb-6">
-          <h3 class="text-lg font-semibold text-white mb-6">How you sign in</h3>
-          <div class="divide-y divide-zinc-800/50">
-            <a href="https://accounts.theboiismc.com/if/flow/default-password-change/" target="_blank" class="py-4 flex items-center justify-between hover:bg-zinc-800/30 rounded-lg px-3 -mx-3 transition">
-              <div class="flex items-center gap-4">
-              
-              <div class="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400"><span class="material-symbols-rounded">key</span></div>
-                <div><div class="font-medium text-white">Password</div><div class="text-xs text-zinc-500">Last changed: (See Authentik)</div></div>
-              </div>
-              <span class="material-symbols-rounded text-zinc-600">chevron_right</span>
-            </a>
-            <a href="https://accounts.theboiismc.com/if/user/#/settings" target="_blank" class="py-4 flex items-center justify-between hover:bg-zinc-800/30 rounded-lg px-3 -mx-3 transition">
- 
-              <div class="flex items-center gap-4">
-                <div class="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400"><span class="material-symbols-rounded">phonelink_lock</span></div>
-                <div><div class="font-medium text-white">2-Step Verification</div><div class="text-xs text-zinc-500">Recommended for higher security</div></div>
-              </div>
-              <span class="material-symbols-rounded text-zinc-600">chevron_right</span>
-     
-            </a>
-          </div>
-        </div>
-        
-        <div class="dashboard-card rounded-2xl p-6 mb-6">
-            <h3 class="text-lg font-semibold text-white mb-6">Account Activity & Devices</h3>
-            <div class="divide-y divide-zinc-800/50">
-                <a href="https://accounts.theboiismc.com/if/user/#/sessions" target="_blank" class="py-4 flex items-center justify-between hover:bg-zinc-800/30 rounded-lg px-3 -mx-3 transition">
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400"><span class="material-symbols-rounded">devices</span></div>
-                        <div><div class="font-medium text-white">Your Signed-In Devices</div><div class="text-xs text-zinc-500">View and log out of active sessions</div></div>
-                    </div>
-                    <span class="material-symbols-rounded text-zinc-600">chevron_right</span>
-                </a>
-                <a href="/activity-history.html" class="py-4 flex items-center justify-between hover:bg-zinc-800/30 rounded-lg px-3 -mx-3 transition">
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400"><span class="material-symbols-rounded">history</span></div>
-                        <div><div class="font-medium text-white">Security & Account History</div><div class="text-xs text-zinc-500">Recent logins and password changes</div></div>
-                    </div>
-                    <span class="material-symbols-rounded text-zinc-600">chevron_right</span>
-                </a>
-            </div>
-        </div>
-        
-        <div class="dashboard-card rounded-2xl p-6 mb-6">
-            <h3 class="text-lg font-semibold text-white mb-6">Your Data & Privacy</h3>
-            <div class="divide-y divide-zinc-800/50">
-                <a href="/data-export.html" class="py-4 flex items-center justify-between hover:bg-zinc-800/30 rounded-lg px-3 -mx-3 transition">
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400"><span class="material-symbols-rounded">cloud_download</span></div>
-                        <div><div class="font-medium text-white">Export Your Data</div><div class="text-xs text-zinc-500">Download a copy of your files and account info</div></div>
-                    </div>
-                    <span class="material-symbols-rounded text-zinc-600">chevron_right</span>
-                </a>
-                <a href="/delete-account.html" class="py-4 flex items-center justify-between hover:bg-red-500/5 rounded-lg px-3 -mx-3 transition">
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-full bg-red-800/50 flex items-center justify-center text-red-400"><span class="material-symbols-rounded">delete_forever</span></div>
-                        <div><div class="font-medium text-red-400">Delete Account</div><div class="text-xs text-zinc-500">Permanently remove your account and data</div></div>
-                    </div>
-                    <span class="material-symbols-rounded text-zinc-600">chevron_right</span>
-                </a>
-            </div>
-        </div>
-      </div>
+    <div id="tab-security" class="tab-content hidden space-y-6">
+       <div class="max-w-3xl g-card p-6">
+           <h2 class="text-xl mb-4">Password & Sign-in</h2>
+           <a href="https://accounts.theboiismc.com/if/flow/default-password-change/" class="flex items-center justify-between py-4 border-b border-[#444746] group">
+               <div>
+                   <div class="text-white">Change Password</div>
+                   <div class="text-sm text-[#c4c7c5]">Last changed: See Authentik</div>
+               </div>
+               <span class="material-symbols-outlined text-[#c4c7c5]">chevron_right</span>
+           </a>
+           <a href="https://accounts.theboiismc.com/if/user/#/settings" class="flex items-center justify-between py-4 group">
+               <div>
+                   <div class="text-white">2-Step Verification</div>
+                   <div class="text-sm text-[#c4c7c5]">Add an extra layer of security</div>
+               </div>
+               <span class="material-symbols-outlined text-[#c4c7c5]">chevron_right</span>
+           </a>
+       </div>
     </div>
+
   </main>
 
+  <div id="edit-modal" class="hidden fixed inset-0 z-[100] modal-backdrop flex items-center justify-center p-4">
+      <div class="bg-[#303030] w-full max-w-md rounded-3xl p-6 shadow-2xl scale-95 opacity-0 transition-all duration-200" id="modal-content">
+          <h3 id="modal-title" class="text-2xl mb-4">Edit Info</h3>
+          <p class="text-[#c4c7c5] mb-6 text-sm">Changes will be reflected across all TheBoiisMC services.</p>
+          
+          <div class="mb-6">
+              <label class="text-xs text-[#a8c7fa] ml-3 mb-1 block">New Value</label>
+              <input type="text" id="modal-input" class="w-full bg-[#1f1f1f] border border-[#555] rounded-lg p-4 text-white focus:border-[#a8c7fa] focus:outline-none transition">
+          </div>
+
+          <div class="flex justify-end gap-3">
+              <button onclick="closeModal()" class="text-[#a8c7fa] font-medium px-6 py-2 rounded-full hover:bg-[#a8c7fa]/10 transition">Cancel</button>
+              <button onclick="saveChanges()" id="save-btn" class="bg-[#a8c7fa] text-[#001d35] font-medium px-6 py-2 rounded-full hover:bg-[#c2e7ff] transition">Save</button>
+          </div>
+      </div>
+  </div>
+
   <script src="/main.js"></script>
-  </body>
+</body>
 </html>
