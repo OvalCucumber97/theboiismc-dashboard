@@ -1,86 +1,142 @@
-// /js/main.js - UI Interactions & Data Fetching
+// Global State
+let currentUser = {};
+let currentEditField = null;
 
-// 1. Fetch User Data from Worker
+// 1. Init
+document.addEventListener('DOMContentLoaded', () => {
+    initDashboard();
+});
+
 async function initDashboard() {
     try {
         const response = await fetch('/me');
-        
         if (!response.ok) {
-            // If fetching /me fails (401 Unauthorized), the worker middleware
-            // should have already redirected us, but if we are here, reload to force it.
+            // Force re-auth if token expired
             window.location.reload(); 
             return;
         }
-
-        const profile = await response.json();
-        updateDashboardUI(profile);
-
+        currentUser = await response.json();
+        updateUI(currentUser);
     } catch (error) {
-        console.error("Failed to load dashboard data:", error);
+        console.error("Load failed", error);
     }
 }
 
-// 2. Update UI with Data
-function updateDashboardUI(profile) {
-    const heroName = document.getElementById('hero-name');
-    const heroAvatar = document.getElementById('hero-avatar');
-    const infoAvatar = document.getElementById('info-avatar');
-    const infoName = document.getElementById('info-name');
-    const infoEmail = document.getElementById('info-email');
+function updateUI(user) {
+    const name = user.name || user.given_name || user.nickname || "User";
+    const email = user.email || "No email";
+    const initial = name.charAt(0).toUpperCase();
 
-    // Authentik returns fields like: given_name, nickname, name, email
-    const displayName = profile.given_name || profile.nickname || profile.name || profile.preferred_username || "User";
-    const email = profile.email || "No email";
-    const initials = displayName.charAt(0).toUpperCase();
-
-    if (heroName) heroName.textContent = displayName;
-    if (heroAvatar) heroAvatar.textContent = initials;
-    if (infoName) infoName.textContent = displayName;
-    if (infoEmail) infoEmail.textContent = email;
-    if (infoAvatar) infoAvatar.textContent = initials;
+    // Headers
+    document.getElementById('hero-name').textContent = name;
+    document.getElementById('hero-avatar').textContent = initial;
+    document.getElementById('info-avatar-small').textContent = initial;
+    
+    // Personal Info Tab
+    document.getElementById('info-name').textContent = name;
+    document.getElementById('info-email').textContent = email;
 }
 
-// 3. Tab Switcher
-window.switchTab = function(targetId) {
-    // Reset Nav
-    document.querySelectorAll('.nav-link').forEach(link => {
-        link.classList.remove('active', 'text-indigo-400', 'bg-indigo-500/10');
-        link.classList.add('text-zinc-400');
+// 2. Tab Logic
+window.switchTab = function(tabName) {
+    // Hide all
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.nav-link').forEach(el => {
+        el.classList.remove('bg-[#004a77]', 'text-[#c2e7ff]', 'active');
+        el.classList.add('text-[#e3e3e3]');
     });
 
-    // Hide Content
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-
-    // Activate
-    const activeLink = document.getElementById(`nav-${targetId}`);
-    if(activeLink) {
-        activeLink.classList.add('active', 'text-indigo-400', 'bg-indigo-500/10');
-        activeLink.classList.remove('text-zinc-400');
-    }
+    // Show One
+    document.getElementById(`tab-${tabName}`).classList.remove('hidden');
     
-    const targetContent = document.getElementById(`tab-${targetId}`);
-    if(targetContent) {
-        targetContent.classList.remove('hidden');
-    }
-
-    // Mobile Menu
-    const sidebar = document.getElementById('sidebar');
-    if (window.innerWidth < 768 && sidebar) {
-        sidebar.classList.add('hidden');
-    }
+    // Highlight Nav
+    const nav = document.getElementById(`nav-${tabName}`);
+    nav.classList.remove('text-[#e3e3e3]');
+    nav.classList.add('bg-[#004a77]', 'text-[#c2e7ff]', 'active');
 };
 
-// 4. Init
-document.addEventListener('DOMContentLoaded', () => {
-    initDashboard();
-
-    // Mobile Menu Toggle
-    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-    const sidebar = document.getElementById('sidebar');
-    if (mobileMenuBtn && sidebar) {
-        mobileMenuBtn.addEventListener('click', () => {
-            sidebar.classList.toggle('hidden');
-            sidebar.classList.add('fixed', 'inset-0', 'bg-black', 'z-50', 'w-full', 'pt-20');
-        });
+// 3. Modal & Editing Logic
+window.openEditModal = function(field) {
+    if(field === 'avatar') {
+        // Avatars are hard to upload via simple API, link to full settings
+        window.open('https://accounts.theboiismc.com/if/user/#/settings', '_blank');
+        return;
     }
-});
+
+    currentEditField = field;
+    const modal = document.getElementById('edit-modal');
+    const content = document.getElementById('modal-content');
+    const title = document.getElementById('modal-title');
+    const input = document.getElementById('modal-input');
+
+    modal.classList.remove('hidden');
+    // Simple animation delay
+    setTimeout(() => {
+        content.classList.remove('scale-95', 'opacity-0');
+        content.classList.add('scale-100', 'opacity-100');
+    }, 10);
+
+    // Setup Fields
+    if(field === 'name') {
+        title.textContent = "Change Name";
+        input.value = currentUser.name || "";
+        input.placeholder = "Enter full name";
+    } else if (field === 'email') {
+        title.textContent = "Change Email";
+        input.value = currentUser.email || "";
+        input.placeholder = "Enter new email";
+    }
+    input.focus();
+};
+
+window.closeModal = function() {
+    const modal = document.getElementById('edit-modal');
+    const content = document.getElementById('modal-content');
+    
+    content.classList.remove('scale-100', 'opacity-100');
+    content.classList.add('scale-95', 'opacity-0');
+    
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        currentEditField = null;
+    }, 200);
+};
+
+window.saveChanges = async function() {
+    const input = document.getElementById('modal-input');
+    const value = input.value;
+    const btn = document.getElementById('save-btn');
+    
+    if(!value) return;
+
+    // UI Loading State
+    btn.textContent = "Saving...";
+    btn.disabled = true;
+
+    // Prepare Payload
+    const payload = {};
+    payload[currentEditField] = value;
+
+    try {
+        const res = await fetch('/functions/update', { // Calls our new Worker
+            method: 'PATCH',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+
+        if(!res.ok) throw new Error("Update failed");
+
+        // Success!
+        const updatedData = await res.json();
+        // Merge updates locally so we don't need to reload
+        currentUser = { ...currentUser, ...updatedData }; 
+        updateUI(currentUser);
+        closeModal();
+
+    } catch (e) {
+        alert("Error saving changes. You may not have permission to edit this field directly.");
+    } finally {
+        btn.textContent = "Save";
+        btn.disabled = false;
+    }
+};
