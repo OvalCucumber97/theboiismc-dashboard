@@ -7,38 +7,47 @@ export async function onRequest(context) {
     return new Response("Missing code", { status: 400 });
   }
 
-  // 1. Exchange Code for Token
-  // UPDATED: Removed the slug path. Used the URL exactly as shown in your JSON config.
-  const tokenResponse = await fetch("https://accounts.theboiismc.com/application/o/token/", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      // Ensure AUTHENTIK_SECRET is set in your Cloudflare Pages variables
-      "Authorization": "Basic " + btoa("yopePhMvPt1dj65UFbmVkxHIuX7MDeeNBoobKSQy" + ":" + env.AUTHENTIK_SECRET)
-    },
-    body: new URLSearchParams({
-      grant_type: "authorization_code",
-      code: code,
-      redirect_uri: "https://myaccount.theboiismc.com/callback"
-    })
-  });
+  // Configuration
+  const CLIENT_ID = "yopePhMvPt1dj65UFbmVkxHIuX7MDeeNBoobKSQy";
+  const CLIENT_SECRET = "YOUR_CLIENT_SECRET_HERE"; // Ensure this is set in your Worker Secrets
+  const REDIRECT_URI = "https://myaccount.theboiismc.com/callback";
+  const TOKEN_ENDPOINT = "https://accounts.theboiismc.com/application/o/token/";
 
-  const tokens = await tokenResponse.json();
+  try {
+    // 1. Exchange Code for Token
+    const tokenResponse = await fetch(TOKEN_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Authorization": `Basic ${btoa(CLIENT_ID + ":" + CLIENT_SECRET)}`
+      },
+      body: new URLSearchParams({
+        grant_type: "authorization_code",
+        code: code,
+        redirect_uri: REDIRECT_URI
+      })
+    });
 
-  if (tokens.error) {
-    return new Response("Auth Error: " + tokens.error, { status: 400 });
-  }
+    const tokens = await tokenResponse.json();
 
-  // 2. Create Session Cookie
-  // Storing the access token in a Secure, HttpOnly cookie
-  const cookieValue = `boiismc_session=${tokens.access_token}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=3600`;
-
-  // 3. Redirect User to Dashboard
-  return new Response(null, {
-    status: 302,
-    headers: {
-      "Location": "/",
-      "Set-Cookie": cookieValue
+    if (tokens.error) {
+      return new Response(`Auth Error: ${tokens.error_description}`, { status: 400 });
     }
-  });
+
+    // 2. Set Root Domain Cookie (CRITICAL FOR SSO)
+    // Domain=.theboiismc.com allows maps.theboiismc.com to see that a session exists
+    const cookieValue = `boiismc_session=${tokens.access_token}; Domain=.theboiismc.com; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${tokens.expires_in || 3600}`;
+
+    // 3. Redirect to Dashboard
+    return new Response(null, {
+      status: 302,
+      headers: {
+        "Location": "/",
+        "Set-Cookie": cookieValue
+      }
+    });
+
+  } catch (err) {
+    return new Response("Internal Error", { status: 500 });
+  }
 }
