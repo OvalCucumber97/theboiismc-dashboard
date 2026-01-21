@@ -9,7 +9,7 @@ export async function onRequest(context) {
 
   // Configuration
   const CLIENT_ID = "yopePhMvPt1dj65UFbmVkxHIuX7MDeeNBoobKSQy";
-  const CLIENT_SECRET = "YOUR_CLIENT_SECRET_HERE"; // Ensure this is set in your Worker Secrets
+  const CLIENT_SECRET = "fpr0JkTLw8ivzu0rnneXfSgbn9XC1nRwcAUbwDIgHhfudV8zOdvo3B7urI2he3iHkFLEyssRw5HzezntdT5XBEDPF5gnLMitxrIRSp1ZR56C8eSS3KSiLQruxDzNeTGU";
   const REDIRECT_URI = "https://myaccount.theboiismc.com/callback";
   const TOKEN_ENDPOINT = "https://accounts.theboiismc.com/application/o/token/";
 
