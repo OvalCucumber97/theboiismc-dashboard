@@ -1,30 +1,46 @@
 // /js/main.js
 
 let currentUser = {};
-let currentEditField = null; // Track what we are editing
+let currentEditField = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     initDashboard();
     setupMenus();
 });
 
-// 1. Fetch User Data
+// 1. Fetch User Data (With Safe Error Handling)
 async function initDashboard() {
     try {
         const response = await fetch('/me');
-        if (!response.ok) {
-            if(response.status === 401) window.location.reload();
+        
+        // Handle Session Expiry (401)
+        if (response.status === 401) {
+            console.warn("Session expired. Redirecting...");
+            // Redirect to auth to re-establish session
+            window.location.href = "https://accounts.theboiismc.com/application/o/authorize/?client_id=yopePhMvPt1dj65UFbmVkxHIuX7MDeeNBoobKSQy&redirect_uri=https://myaccount.theboiismc.com/callback&response_type=code&scope=openid+profile+email";
             return;
         }
+
+        if (!response.ok) throw new Error("API Error");
+
         currentUser = await response.json();
         updateDashboardUI(currentUser);
+
     } catch (error) {
         console.error("Failed to load dashboard data:", error);
-        showToast("Failed to load profile", "error");
+        // Show friendly error UI
+        document.querySelector('main').innerHTML = `
+            <div class="flex flex-col items-center justify-center h-64 text-center">
+                <span class="material-symbols-rounded text-4xl text-red-400 mb-2">error_outline</span>
+                <h2 class="text-xl font-bold text-white">Unable to load profile</h2>
+                <p class="text-slate-400 text-sm mt-1 mb-4">We couldn't verify your identity.</p>
+                <button onclick="window.location.reload()" class="px-5 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 transition">Retry</button>
+            </div>
+        `;
     }
 }
 
-// 2. Update UI
+// 2. Update UI (Replace Skeletons with Data)
 function updateDashboardUI(profile) {
     // Header & Menus
     const headerAvatar = document.getElementById('header-avatar');
@@ -32,50 +48,47 @@ function updateDashboardUI(profile) {
     const menuName = document.getElementById('menu-name');
     const menuEmail = document.getElementById('menu-email');
 
-    // Tab: Personal Info
+    // Tab Content
     const infoAvatarSmall = document.getElementById('info-avatar-small');
     const infoName = document.getElementById('info-name');
     const infoEmail = document.getElementById('info-email');
 
-    // Authentik field mapping
     const displayName = profile.name || profile.given_name || profile.nickname || "User";
     const email = profile.email || "No email";
     const initials = displayName.charAt(0).toUpperCase();
 
-    // Fill Header
+    // Update Text (This automatically removes the skeleton div inside infoName/infoEmail)
     if (headerAvatar) headerAvatar.textContent = initials;
     if (menuAvatarLarge) menuAvatarLarge.textContent = initials;
     if (menuName) menuName.textContent = displayName;
     if (menuEmail) menuEmail.textContent = email;
 
-    // Fill Page Content
     if (infoAvatarSmall) infoAvatarSmall.textContent = initials;
     if (infoName) infoName.textContent = displayName;
     if (infoEmail) infoEmail.textContent = email;
 }
 
-// 3. Setup Header Menus (Apps & User)
+// 3. Setup Menus & Navigation
 function setupMenus() {
     const appsBtn = document.getElementById('apps-btn');
     const userBtn = document.getElementById('user-btn');
     const appsMenu = document.getElementById('apps-menu');
     const userMenu = document.getElementById('user-menu');
     
-    // Toggle Apps
+    // Header Toggles
     appsBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         userMenu.classList.add('hidden');
         appsMenu.classList.toggle('hidden');
     });
 
-    // Toggle User
     userBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         appsMenu.classList.add('hidden');
         userMenu.classList.toggle('hidden');
     });
 
-    // Click Outside
+    // Close on Click Outside
     document.addEventListener('click', (e) => {
         if (!appsMenu.contains(e.target) && !appsBtn.contains(e.target)) {
             appsMenu.classList.add('hidden');
@@ -87,49 +100,61 @@ function setupMenus() {
 
     // Mobile Sidebar
     const mobileBtn = document.getElementById('mobile-menu-btn');
+    const closeSidebarBtn = document.getElementById('close-sidebar-btn'); // New close button
     const sidebar = document.getElementById('sidebar');
     const backdrop = document.getElementById('sidebar-backdrop');
     
-    if(mobileBtn) {
-        mobileBtn.addEventListener('click', () => {
-            sidebar.classList.remove('-translate-x-full');
-            backdrop.classList.remove('hidden');
-        });
-    }
+    const openSidebar = () => {
+        sidebar.classList.remove('-translate-x-full');
+        backdrop.classList.remove('hidden');
+    };
+    
+    const closeSidebar = () => {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+    };
 
-    if(backdrop) {
-        backdrop.addEventListener('click', () => {
-            sidebar.classList.add('-translate-x-full');
-            backdrop.classList.add('hidden');
-        });
-    }
+    if(mobileBtn) mobileBtn.addEventListener('click', openSidebar);
+    if(closeSidebarBtn) closeSidebarBtn.addEventListener('click', closeSidebar);
+    if(backdrop) backdrop.addEventListener('click', closeSidebar);
 }
 
-// 4. Tab Switcher
+// 4. Tab Switcher (With Smooth Animation)
 window.switchTab = function(targetId) {
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+    // Hide all
+    document.querySelectorAll('.tab-content').forEach(c => {
+        c.classList.add('hidden');
+        c.classList.remove('fade-in'); // Reset animation
+    });
     
+    // Reset Nav Styles
     document.querySelectorAll('.nav-link').forEach(link => {
         link.classList.remove('active', 'bg-indigo-500/10', 'text-indigo-400');
         link.classList.add('text-slate-400');
     });
 
+    // Show Target
     const content = document.getElementById(`tab-${targetId}`);
-    if(content) content.classList.remove('hidden');
+    if(content) {
+        content.classList.remove('hidden');
+        // Trigger Animation
+        setTimeout(() => content.classList.add('fade-in'), 10);
+    }
 
+    // Highlight Nav
     const nav = document.getElementById(`nav-${targetId}`);
     if(nav) {
         nav.classList.add('active', 'bg-indigo-500/10', 'text-indigo-400');
         nav.classList.remove('text-slate-400');
     }
 
-    // Close User Menu if open
+    // Cleanup Menus
     document.getElementById('user-menu').classList.add('hidden');
     
-    // Close Mobile Menu if open
+    // Close Mobile Sidebar if Open
     const sidebar = document.getElementById('sidebar');
-    const backdrop = document.getElementById('sidebar-backdrop');
     if (!sidebar.classList.contains('-translate-x-full')) {
+        const backdrop = document.getElementById('sidebar-backdrop');
         sidebar.classList.add('-translate-x-full');
         backdrop.classList.add('hidden');
     }
@@ -212,7 +237,6 @@ window.saveChanges = async function() {
 
         if (!res.ok) throw new Error("Update failed");
 
-        // Optimistic update
         currentUser = { ...currentUser, ...payload }; 
         updateDashboardUI(currentUser);
         closeModal();
@@ -228,7 +252,7 @@ window.saveChanges = async function() {
     }
 };
 
-// 7. Toast Notification System
+// 7. Toast Notification
 function showToast(message, type = 'success') {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
@@ -246,6 +270,6 @@ function showToast(message, type = 'success') {
     setTimeout(() => { toast.classList.remove('translate-y-10', 'opacity-0'); }, 10);
     setTimeout(() => {
         toast.classList.add('translate-y-10', 'opacity-0');
-        setTimeout(() => toast.remove(), 300);
+        setTimeout(() => toast.remove(), 3000);
     }, 3000);
 }
