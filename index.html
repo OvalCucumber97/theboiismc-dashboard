@@ -31,8 +31,10 @@
   <style>
     body { background-color: #0f172a; color: #e2e8f0; }
     
+    /* Shadows & Transitions */
     .menu-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3); }
     
+    /* Dropdown Pop-in Animation */
     .dropdown-enter {
         animation: scaleIn 0.1s ease-out forwards;
         transform-origin: top right;
@@ -40,6 +42,15 @@
     @keyframes scaleIn {
         from { opacity: 0; transform: scale(0.95); }
         to { opacity: 1; transform: scale(1); }
+    }
+
+    /* Tab Fade-in Animation */
+    .fade-in {
+      animation: fadeIn 0.3s ease-out forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     /* Scrollbar */
@@ -130,8 +141,16 @@
 
   <div class="flex flex-1 pt-16">
       
-      <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 transform -translate-x-full md:translate-x-0 transition-transform duration-300 md:relative bg-[#0f172a] border-r border-white/5 pt-20 md:pt-4 flex flex-col">
-        <nav class="flex-1 px-3 space-y-1">
+      <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 transform -translate-x-full md:translate-x-0 transition-transform duration-300 md:relative bg-[#0f172a] border-r border-white/5 flex flex-col pt-0 md:pt-4">
+        
+        <div class="md:hidden flex items-center justify-between p-4 border-b border-white/5 pt-6">
+            <span class="font-bold text-white text-lg">Menu</span>
+            <button id="close-sidebar-btn" class="p-2 text-slate-400 hover:text-white rounded-full hover:bg-white/10">
+                <span class="material-symbols-rounded">close</span>
+            </button>
+        </div>
+
+        <nav class="flex-1 px-3 space-y-1 mt-4 md:mt-0">
           <button onclick="switchTab('home')" id="nav-home" class="nav-link group active w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200">
             <span class="material-symbols-rounded text-[20px] opacity-70 group-hover:opacity-100">dashboard</span> 
             Dashboard
@@ -149,22 +168,22 @@
       
       <main class="flex-1 p-4 md:p-8 max-w-5xl mx-auto w-full">
          
-         <div id="tab-home" class="tab-content space-y-8">
-            <h1 class="text-2xl font-semibold mb-6">Home</h1>
+         <div id="tab-home" class="tab-content fade-in space-y-8">
+            <h1 class="text-2xl font-semibold mb-6 text-white">Home</h1>
             
             <div class="grid md:grid-cols-2 gap-4">
                <div class="p-6 rounded-2xl bg-[#1e293b] border border-white/5">
-                   <h2 class="text-lg font-medium mb-2">Welcome</h2>
+                   <h2 class="text-lg font-medium mb-2 text-white">Welcome</h2>
                    <p class="text-slate-400 text-sm">Manage your info, privacy, and security to make TheBoiisMC work better for you.</p>
                </div>
                <div class="p-6 rounded-2xl bg-[#1e293b] border border-white/5">
-                   <h2 class="text-lg font-medium mb-2">Privacy suggestions</h2>
+                   <h2 class="text-lg font-medium mb-2 text-white">Privacy suggestions</h2>
                    <p class="text-slate-400 text-sm mb-4">Take the Privacy Checkup to review key settings.</p>
                    <button onclick="switchTab('security')" class="text-indigo-400 text-sm font-medium hover:underline">Review settings</button>
                </div>
             </div>
 
-            <h2 class="text-lg font-medium mt-8 mb-4">Your Services</h2>
+            <h2 class="text-lg font-medium mt-8 mb-4 text-white">Your Services</h2>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <a href="https://drive.theboiismc.com" class="p-4 bg-[#1e293b] rounded-2xl hover:bg-[#334155] transition flex flex-col items-center justify-center gap-2 h-32 border border-white/5 group">
                     <span class="material-symbols-rounded text-3xl text-blue-400 group-hover:scale-110 transition">cloud</span>
@@ -186,7 +205,7 @@
          </div>
 
          <div id="tab-personal" class="tab-content hidden max-w-3xl">
-            <h1 class="text-2xl font-semibold mb-2">Personal Info</h1>
+            <h1 class="text-2xl font-semibold mb-2 text-white">Personal Info</h1>
             <p class="text-slate-400 text-sm mb-6">Manage how you appear across TheBoiisMC services.</p>
 
             <div class="bg-[#1e293b] border border-white/5 rounded-2xl overflow-hidden divide-y divide-white/5">
@@ -205,7 +224,9 @@
                 <div class="p-6 flex items-center justify-between hover:bg-white/[0.02] transition cursor-pointer group" onclick="openEditModal('name')">
                     <div>
                        <div class="text-sm font-medium text-white mb-1">Display Name</div>
-                       <div id="info-name" class="text-sm text-slate-400">Loading...</div>
+                       <div id="info-name" class="text-sm text-slate-400">
+                           <div class="h-4 w-32 bg-slate-700 rounded animate-pulse"></div>
+                       </div>
                     </div>
                     <span class="material-symbols-rounded text-slate-500 group-hover:text-white transition">edit</span>
                 </div>
@@ -213,7 +234,9 @@
                 <div class="p-6 flex items-center justify-between hover:bg-white/[0.02] transition cursor-pointer group" onclick="openEditModal('email')">
                     <div>
                        <div class="text-sm font-medium text-white mb-1">Email Address</div>
-                       <div id="info-email" class="text-sm text-slate-400">Loading...</div>
+                       <div id="info-email" class="text-sm text-slate-400">
+                           <div class="h-4 w-48 bg-slate-700 rounded animate-pulse"></div>
+                       </div>
                     </div>
                     <span class="material-symbols-rounded text-slate-500 group-hover:text-white transition">edit</span>
                 </div>
@@ -222,7 +245,7 @@
          </div>
 
          <div id="tab-security" class="tab-content hidden max-w-3xl">
-            <h1 class="text-2xl font-semibold mb-2">Security & Login</h1>
+            <h1 class="text-2xl font-semibold mb-2 text-white">Security & Login</h1>
             <p class="text-slate-400 text-sm mb-6">Settings are managed securely via Authentik.</p>
 
             <div class="bg-[#1e293b] border border-white/5 rounded-2xl overflow-hidden divide-y divide-white/5">
